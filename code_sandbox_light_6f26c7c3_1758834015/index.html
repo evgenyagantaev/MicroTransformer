@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Демонстрация нейронной сети на единичной окружности</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Заголовок -->
+    <header class="main-header">
+        <div class="container">
+            <h1 class="title">
+                <i class="fas fa-brain"></i>
+                Демонстрация нейронной сети
+            </h1>
+            <p class="subtitle">Анализ точек на единичной окружности</p>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="container">
+            <!-- Панель управления -->
+            <div class="control-panel">
+                <div class="controls-section">
+                    <h3><i class="fas fa-sliders-h"></i> Управление анимацией</h3>
+                    <div class="control-group">
+                        <button id="playPauseBtn" class="btn btn-primary">
+                            <i class="fas fa-play"></i> Старт
+                        </button>
+                        <button id="stepBtn" class="btn btn-secondary">
+                            <i class="fas fa-step-forward"></i> Шаг
+                        </button>
+                        <button id="resetBtn" class="btn btn-secondary">
+                            <i class="fas fa-redo"></i> Сброс
+                        </button>
+                    </div>
+                    <div class="control-group">
+                        <label for="speedRange">Скорость анимации:</label>
+                        <input type="range" id="speedRange" min="0.5" max="5" value="1" step="0.1">
+                        <span id="speedValue">1.0x</span>
+                    </div>
+                </div>
+
+                <!-- Статистика -->
+                <div class="stats-section">
+                    <h3><i class="fas fa-chart-line"></i> Статистика</h3>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <span class="stat-label">Текущая ошибка:</span>
+                            <span id="currentError" class="stat-value">0.000</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Средняя ошибка:</span>
+                            <span id="avgError" class="stat-value">0.000</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Итераций:</span>
+                            <span id="iterations" class="stat-value">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Основная визуализация -->
+            <div class="visualization-container">
+                <div class="canvas-container">
+                    <h3><i class="fas fa-circle"></i> Единичная окружность</h3>
+                    <canvas id="circleCanvas" width="400" height="400"></canvas>
+                    <div class="legend">
+                        <div class="legend-item">
+                            <div class="color-box" style="background: #4CAF50;"></div>
+                            <span>Исходный вектор</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="color-box" style="background: #f44336;"></div>
+                            <span>Предсказание сети</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="network-container">
+                    <h3><i class="fas fa-project-diagram"></i> Топология сети</h3>
+                    <canvas id="networkCanvas" width="400" height="400"></canvas>
+                    <div class="network-info">
+                        <p><strong>Входной слой:</strong> 2 нейрона (cos, sin)</p>
+                        <p><strong>Скрытый слой:</strong> 5 нейронов</p>
+                        <p><strong>Выходной слой:</strong> 1 нейрон (ω)</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Дополнительная информация -->
+            <div class="info-panel">
+                <div class="info-section">
+                    <h3><i class="fas fa-info-circle"></i> О нейронной сети</h3>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <h4>Входные данные</h4>
+                            <p>Координаты точки на единичной окружности: cos(2πω) и sin(2πω)</p>
+                        </div>
+                        <div class="info-item">
+                            <h4>Задача сети</h4>
+                            <p>По координатам точки предсказать исходное значение ω ∈ [0, 1]</p>
+                        </div>
+                        <div class="info-item">
+                            <h4>Функции активации</h4>
+                            <p>Скрытый слой: 2/(1+e^(-h)) - модифицированная сигмоида<br>
+                               Выходной слой: 1/(1+e^(-z)) - стандартная сигмоида</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Значения в реальном времени -->
+                <div class="values-section">
+                    <h3><i class="fas fa-calculator"></i> Текущие значения</h3>
+                    <div class="values-grid">
+                        <div class="value-group">
+                            <h4>Вход</h4>
+                            <div class="value-item">
+                                <span>ω:</span>
+                                <span id="inputOmega">0.000</span>
+                            </div>
+                            <div class="value-item">
+                                <span>cos(2πω):</span>
+                                <span id="inputCos">0.000</span>
+                            </div>
+                            <div class="value-item">
+                                <span>sin(2πω):</span>
+                                <span id="inputSin">0.000</span>
+                            </div>
+                        </div>
+                        <div class="value-group">
+                            <h4>Выход</h4>
+                            <div class="value-item">
+                                <span>Предсказание:</span>
+                                <span id="outputPrediction">0.000</span>
+                            </div>
+                            <div class="value-item">
+                                <span>Ошибка:</span>
+                                <span id="outputError">0.000</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Подвал -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 Демонстрация нейронной сети. Создано с использованием JavaScript Canvas API</p>
+        </div>
+    </footer>
+
+    <script src="js/neural-network.js"></script>
+    <script src="js/visualization.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
